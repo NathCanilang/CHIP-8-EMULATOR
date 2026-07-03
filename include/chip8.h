@@ -7,8 +7,10 @@
 typedef struct Chip8 Chip8;
 
 void chip_init(Chip8* chip8);
+void cycle_instruction(Chip8* chip8);
 void load_rom(Chip8* chip8, char const * filename);
 uint8_t generate_random_seed(void);
+
 
 void OP_00E0(Chip8* chip8); // 00E0 - CLS: Clear the display
 void OP_00EE(Chip8* chip8); // 00EE - RET: Return from subroutine

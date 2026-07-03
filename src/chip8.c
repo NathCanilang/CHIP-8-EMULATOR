@@ -58,6 +58,208 @@ void chip_init(Chip8 *chip8)
     }
 }
 
+static void decode_0x0_instructions(Chip8 *chip8){
+    switch((chip8->opcode & 0x000Fu)){
+        case 0x0:
+            OP_00E0(chip8);
+            break;
+        
+        case 0xE:
+            OP_00EE(chip8);
+            break;
+        default:
+            break;
+    }
+}
+
+static void decode_0x8_instructions(Chip8 *chip8){
+    switch((chip8->opcode & 0x000Fu)){
+        case 0x0:
+            OP_8xy0(chip8);
+            break;
+        
+        case 0x1:
+            OP_8xy1(chip8);
+            break;
+
+        case 0x2:
+            OP_8xy2(chip8);
+            break;
+
+        case 0x3:
+            OP_8xy3(chip8);
+            break;
+
+        case 0x4:
+            OP_8xy4(chip8);
+            break;
+
+        case 0x5:
+            OP_8xy5(chip8);
+            break;
+
+        case 0x6:
+            OP_8xy6(chip8);
+            break;
+
+        case 0x07:
+            OP_8xy7(chip8);
+            break;
+
+        case 0xE:
+            OP_8xyE(chip8);
+            break;
+
+        default:
+            break;
+    }
+}
+
+static void decode_0xE_instructions(Chip8 *chip8){
+    switch((chip8->opcode & 0x000Fu)){
+        case 0xE:
+            OP_Ex9E(chip8);
+            break;
+        
+        case 0x1:
+            OP_ExA1(chip8);
+            break;
+
+        default:
+            break;
+    }
+}
+
+static void decode_0xF_instructions(Chip8 *chip8){
+    switch((chip8->opcode & 0x00FFu)){
+        case 0x07:
+            OP_Fx07(chip8);
+            break;
+
+        case 0x0A:
+            OP_Fx0A(chip8);
+            break;
+        
+        case 0x15:
+            OP_Fx15(chip8);
+            break;
+        
+        case 0x18:
+            OP_Fx18(chip8);
+            break;
+        
+        case 0x1E:
+            OP_Fx1E(chip8);
+            break;
+        
+        case 0x29:
+            OP_Fx29(chip8);
+            break;
+        
+        case 0x33:
+            OP_Fx33(chip8);
+            break;
+        
+        case 0x55:
+            OP_Fx55(chip8);
+            break;
+        
+        case 0x65:
+            OP_Fx65(chip8);
+            break;
+        
+        default:
+            break;
+    }
+
+}
+
+void cycle_instruction(Chip8 *chip8)
+{
+    chip8->opcode = (chip8->memory[chip8->program_counter << 8u] | chip8->memory[chip8->program_counter + 1]);
+    chip8->program_counter += 2;
+
+    // first switch for the MSB 
+    switch((chip8->opcode & 0xF000u) >> 12u)
+    {
+        case 0x0:
+            decode_0x0_instructions(chip8);
+            break;
+
+        case 0x1:
+            OP_1nnn(chip8);
+            break;
+
+        case 0x2:
+            OP_2nnn(chip8);
+            break;
+
+        case 0x3:
+            OP_3xkk(chip8);
+            break;
+
+        case 0x4:
+            OP_4xkk(chip8);
+            break;
+
+        case 0x5:
+            OP_5xy0(chip8);
+            break;
+
+        case 0x6:
+            OP_6xkk(chip8);
+            break;
+
+        case 0x7:
+            OP_7xkk(chip8);
+            break;
+
+        case 0x8:
+            decode_0x8_instructions(chip8);
+            break;
+
+        case 0x9:
+            OP_9xy0(chip8);
+            break;
+
+        case 0xA:
+            OP_Annn(chip8);
+            break;
+            
+        case 0xB:
+            OP_Bnnn(chip8);
+            break;
+
+        case 0xC:
+            OP_Cxkk(chip8);
+            break;
+
+        case 0xD:
+            OP_Dxyn(chip8);
+            break;
+
+        case 0xE:
+            decode_0xE_instructions(chip8);
+            break;
+
+        case 0xF:
+            decode_0xF_instructions(chip8);
+            break;
+
+        default:
+            printf("Error: Unknown Instruction");
+            break;
+    }
+
+    if(chip8->d_timer > 0){
+        --chip8->d_timer;
+    }
+
+    if(chip8->s_timer > 0){
+        --chip8->s_timer;
+    }
+}
+
 // TODO: proper error handling
 void load_rom(Chip8* chip8, char const *filename)
 {
